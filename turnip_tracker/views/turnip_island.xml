@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="turnip_island_tree_view" model="ir.ui.view">
+        <field name="name">turnip.island.tree</field>
+        <field name="model">turnip.island</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="villager"/>
+                <field name="hemisphere"/>
+                <field name="timezone"/>
+                <field name="owner_id"/>
+                <field name="twitter"/>
+                <field name="reddit"/>
+                <field name="nintendo"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="turnip_island_form_view" model="ir.ui.view">
+        <field name="name">turnip.island.form</field>
+        <field name="model">turnip.island</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button type="object" name="set_online" attrs="{'invisible': [('is_online', '=', True)]}" string="Set Online"/>
+                    <button type="object" name="set_online" attrs="{'invisible': [('is_online', '=', False)]}" string="Reset Online Time"/>
+                    <button type="object" name="set_offline" attrs="{'invisible': [('is_online', '=', False)]}" string="Set Offline"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="villager"/>
+                            <field name="owner_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="hemisphere"/>
+                            <field name="timezone"/>
+                            <field name="is_online" readonly="True"/>
+                            <field name="online_until" readonly="True"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="twitter"/>
+                            <field name="reddit"/>
+                            <field name="nintendo"/>
+                        </group>
+                        <group>
+                            <field name="comment"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="prices" string="Turnip Prices">
+                            <field name="price_ids" nolabel="1">
+                                <tree editable="top">
+                                    <field name="date"/>
+                                    <field name="time"/>
+                                    <field name="price"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

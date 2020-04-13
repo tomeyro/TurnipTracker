@@ -1,0 +1,3 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_turnip_island,access_turnip_island,model_turnip_island,,1,1,1,1
+access_turnip_price,access_turnip_price,model_turnip_price,,1,1,1,1

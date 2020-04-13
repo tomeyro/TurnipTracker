@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="turnip_tracker_widget" name="Turnip Tracker: Widget">
+        <div class="table-responsive">
+            <form action="">
+                <table class="table table-striped table-hover mb0">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 80px;">Island</th>
+                            <th style="min-width: 80px;">Villager</th>
+                            <th style="min-width: 80px;">Date</th>
+                            <th style="min-width: 80px;">Time</th>
+                            <th style="min-width: 80px;">Price</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" id="island" name="island" t-att-value="filters['island']" placeholder="Island" class="form-control"/></td>
+                            <td><input type="text" id="villager" name="villager" t-att-value="filters['villager']" placeholder="Villager" class="form-control"/></td>
+                            <td><input type="date" id="date" name="date" t-att-value="filters['date']" placeholder="Date" class="form-control"/></td>
+                            <td>
+                                <select t-attf-class="form-control" id="time" name="time">
+                                    <option value="">Time</option>
+                                    <t t-foreach="times" t-as="time_data">
+                                        <option t-att-value="time_data" t-att-selected="time_data == filters['time']">
+                                            <t t-esc="times[time_data]"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </td>
+                            <td><input type="number" id="price" name="price" t-att-value="filters['price']" placeholder="Min Price" class="form-control"/></td>
+                            <td class="text-right"><button type="submit" class="btn btn-primary" title="Filter Prices"><i class="fa fa-search"/></button></td>
+                        </tr>
+                        <t t-foreach="prices" t-as="price">
+                            <tr data-toggle="modal" t-att-data-target="'#island_price_modal_%s' % price.id" style="cursor: pointer;">
+                                <td>
+                                    <t t-esc="price.island_id.name or '-'"/>
+                                </td>
+                                <td>
+                                    <t t-esc="price.island_id.villager or '-'"/>
+                                </td>
+                                <td>
+                                    <t t-esc="price.date.strftime('%Y-%m-%d') if price.date else '-'"/>
+                                </td>
+                                <td>
+                                    <t t-esc="times.get(price.time, '-')"/>
+                                </td>
+                                <td>
+                                    <t t-esc="price.price or 0"/>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </t>
+                        <t t-if="not prices">
+                            <tr>
+                                <td colspan="6" class="text-center text-danger">
+                                    There are no prices yet!
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </form>
+            <t t-foreach="prices" t-as="price">
+                <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" t-att-id="'island_price_modal_%s' % price.id">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <t t-esc="'Island: %s' % (price.island_id.name or '-')"/>
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <i class="fa fa-close"/>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    <b>Villager: </b> <t t-esc="price.island_id.villager or '-'"/><br/>
+                                    <b>Date: </b> <t t-esc="price.date.strftime('%Y-%m-%d') if price.date else '-'"/><br/>
+                                    <b>Time: </b> <t t-esc="times.get(price.time, '-')"/><br/><br/>
+                                    <big><b>PRICE: </b> <t t-esc="price.price or 0"/>!</big>
+                                </p>
+                                <p t-if="price.comment">
+                                    <t t-esc="price.comment"/>
+                                </p>
+                                <p t-if="price.island_id.comment">
+                                    <t t-esc="price.island_id.comment"/>
+                                </p>
+                                <p>
+                                    <b>Twitter: </b> <t t-esc="price.island_id.twitter or '-'"/><br/>
+                                    <b>Reddit: </b> <t t-esc="price.island_id.reddit or '-'"/><br/>
+                                    <b>Nintendo: </b> <t t-esc="price.island_id.nintendo or '-'"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+
+</odoo>

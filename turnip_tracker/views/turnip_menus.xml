@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="turnip_island_action" model="ir.actions.act_window">
+        <field name="name">Turnip Islands</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">turnip.island</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="turnip_price_action" model="ir.actions.act_window">
+        <field name="name">Turnip Prices</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">turnip.price</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <menuitem name="Turnip Tracker" id="turnip_tracker_menu"
+        sequence="0" action="turnip_island_action"/>
+
+    <menuitem name="Islands" id="turnip_island_menu"
+        parent="turnip_tracker_menu" sequence="1"
+        action="turnip_island_action"/>
+
+    <menuitem name="Prices" id="turnip_price_menu"
+        parent="turnip_tracker_menu" sequence="2"
+        action="turnip_price_action"/>
+
+</odoo>

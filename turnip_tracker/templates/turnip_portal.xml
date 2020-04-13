@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="turnip_portal_home" name="Portal: Turnip Tracker - Home" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Islands</t>
+                <t t-set="url" t-value="'/my/islands'"/>
+                <t t-set="count" t-value="island_count or 0"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="turnip_portal_island" name="Portal: Turnip Tracker - Islands">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Islands</t>
+            </t>
+            <t t-if="not islands">
+                <p>There are currently no islands for your account.</p>
+            </t>
+            <t t-if="islands" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Name</th>
+                        <th class="text-center">Villager</th>
+                        <th class="text-center">Hemisphere</th>
+                        <th class="text-center">Timezone</th>
+                        <th class="text-center">Is Online</th>
+                        <th class="text-center">Online Until</th>
+                        <th class="text-right">Options</th>
+                    </tr>
+                </thead>
+                <t t-foreach="islands" t-as="island">
+                    <tr>
+                        <td><t t-esc="island.name or '-'"/></td>
+                        <td class="text-center"><t t-esc="island.villager or '-'"/></td>
+                        <td class="text-center">
+                            <t t-esc="hemispheres.get(island.hemisphere, '-')"/>
+                        </td>
+                        <td class="text-center"><t t-esc="island.timezone or '-'"/></td>
+                        <td class="text-center">
+                            <form t-attf-action="/my/islands/{{ island.id }}/toggle_online" method="post" class="mb0">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="island_id" t-att-value="island.id"/>
+                                <button type="submit" class="btn btn-link" title="Toggle Online/Offline" style="padding: 0 5px;">
+                                    <i t-attf-class="fa fa-circle {{ 'text-success' if island.is_online else 'text-danger' }}"/>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="text-center">
+                            <t t-esc="island.online_until.strftime('%Y-%m-%d %H:%M:%S') if island.online_until else '-'"/>
+                            <t t-if="island.is_online">
+                                <form t-attf-action="/my/islands/{{ island.id }}/toggle_online" method="post" class="mb0" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="island_id" t-att-value="island.id"/>
+                                    <input type="hidden" name="refresh_online" value="1"/>
+                                    <button type="submit" class="btn btn-link" title="Refresh Online Time" style="padding: 0 5px;">
+                                        <i class="fa fa-refresh"/>
+                                    </button>
+                                </form>
+                            </t>
+                        </td>
+                        <td class="text-right">
+                            <form t-attf-action="/my/islands/{{ island.id }}" method="post" class="mb0" style="display: inline;">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="btn btn-primary" title="Edit Island Information">
+                                    <i class="fa fa-edit"/>
+                                </button>
+                            </form>
+                            <form t-attf-action="/my/islands/{{ island.id }}/prices" method="post" class="mb0" style="display: inline;">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="island_id" t-att-value="island.id"/>
+                                <button type="submit" class="btn btn-primary" title="Go to Island Prices">
+                                    <i class="fa fa-money"/>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+            <div class="mb16"></div>
+            <div class="row">
+                <div class="col-12">
+                    <form action="/my/islands/new" method="post" class="mb0">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <button type="submit" class="btn btn-primary">Create New Island</button>
+                    </form>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="turnip_portal_island_form" name="Portal: Turnip Tracker - Island" inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <row id="o_tunip_portal">
+                <div class="mb16"/>
+
+                <h1 class="col-12 mb16">
+                    <t t-if="island">
+                        <t t-esc="'Editing Island: %s' % island.name"/>
+                    </t>
+                    <t t-else="">
+                        New Island
+                    </t>
+                </h1>
+
+                <div class="col-12">
+                    <form t-att-action="'/my/islands/new' if not island else ('/my/islands/%s' % island.id)" method="POST">
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label for="name">Island's Name *</label>
+                                <input type="text" t-attf-class="form-control #{'is-invalid' if errors.get('name') else ''}" id="name" name="name" t-att-value="form['name'] or ''"/>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="villager">Villager's Name *</label>
+                                <input type="text" t-attf-class="form-control #{'is-invalid' if errors.get('villager') else ''}" id="villager" name="villager" t-att-value="form['villager'] or ''"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label for="hemisphere">Hemisphere *</label>
+                                <select t-attf-class="form-control #{'is-invalid' if errors.get('hemisphere') else ''}" id="hemisphere" name="hemisphere">
+                                    <option value="">Hemisphere</option>
+                                    <t t-foreach="hemispheres" t-as="hemisphere_data">
+                                        <option t-att-value="hemisphere_data[0]" t-att-selected="hemisphere_data[0] == form['hemisphere']">
+                                            <t t-esc="hemisphere_data[1]"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="timezone">Timezone *</label>
+                                <select t-attf-class="form-control #{'is-invalid' if errors.get('timezone') else ''}" id="timezone" name="timezone">
+                                    <option value="">Timezone</option>
+                                    <t t-foreach="timezones" t-as="timezone_data">
+                                        <option t-att-value="timezone_data[0]" t-att-selected="timezone_data[0] == form['timezone']">
+                                            <t t-esc="timezone_data[1]"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="twitter">Twitter</label>
+                                    <input type="text" t-attf-class="form-control #{'is-invalid' if errors.get('twitter') else ''}" id="twitter" name="twitter" t-att-value="form['twitter'] or ''"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reddit">Reddit</label>
+                                    <input type="text" t-attf-class="form-control #{'is-invalid' if errors.get('reddit') else ''}" id="reddit" name="reddit" t-att-value="form['reddit'] or ''"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nintendo">Nintendo</label>
+                                    <input type="text" t-attf-class="form-control #{'is-invalid' if errors.get('nintendo') else ''}" id="nintendo" name="nintendo" t-att-value="form['nintendo'] or ''"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="comment">Comment</label>
+                                    <textarea t-attf-class="form-control #{'is-invalid' if errors.get('comment') else ''}" id="comment" name="comment" rows="8" style="resize: none;"><t t-esc="form['comment'] or ''"/></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="hidden" name="submitted" value="1"/>
+                        <input type="hidden" name="owner_id" t-att-value="user.id"/>
+                        <t t-if="island">
+                            <input type="hidden" name="island_id" t-att-value="island.id"/>
+                        </t>
+
+                        <div class="mb16"/>
+                        <div class="d-flex justify-content-between">
+                            <a role="button" href="/my/islands" class="btn btn-secondary mb32">
+                                <i class="fa fa-chevron-left"/>
+                                <span>Cancel</span>
+                            </a>
+                            <button type="submit" href="#" class="btn btn-primary mb32 a-submit a-submit-disable a-submit-loading">
+                                <span>Save</span>
+                                <i class="fa fa-chevron-right"/>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </row>
+        </xpath>
+    </template>
+
+    <template id="turnip_portal_island_prices" name="Portal: Turnip Tracker - Islands Prices">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Islands Prices</t>
+            </t>
+            <h1>
+                <t t-esc="'Island Prices for: %s' % island.name"/>
+            </h1>
+            <t t-if="not prices">
+                <p>There are currently no prices for this island.</p>
+            </t>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Time</th>
+                        <th class="text-center">Price</th>
+                        <th class="text-center">Comment</th>
+                        <th class="text-right">Options</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <form t-attf-action="/my/islands/{{ island.id }}/prices/new" method="post" class="mb0" style="display: inline;">
+                        <td>
+                            <input type="text" id="date" name="date" pattern="\d\d\d\d-\d\d-\d\d" placeholder="YYYY-MM-DD" class="form-control" required="required"/>
+                        </td>
+                        <td>
+                            <select t-attf-class="form-control" id="time" name="time" required="required">
+                                <option value="">Time</option>
+                                <t t-foreach="times" t-as="time_data">
+                                    <option t-att-value="time_data">
+                                        <t t-esc="times[time_data]"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" id="price" name="price" class="form-control" required="required"/>
+                        </td>
+                        <td>
+                            <input type="text" id="comment" name="comment" class="form-control" placeholder="Comment"/>
+                        </td>
+                        <td class="text-right">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-success" title="Save New Price">
+                                <i class="fa fa-check"/>
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                <t t-foreach="prices" t-as="price">
+                    <tr>
+                        <td class="text-center"><t t-esc="price.date.strftime('%Y-%m-%d')"/></td>
+                        <td class="text-center"><t t-esc="times.get(price.time, '-')"/></td>
+                        <td class="text-center"><t t-esc="price.price"/></td>
+                        <td class="text-center"><t t-esc="price.comment"/></td>
+                        <td class="text-right">
+                            <form t-attf-action="/my/islands/{{ island.id }}/prices/{{ price.id }}/delete" method="post" class="mb0" style="display: inline;">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="btn btn-danger" title="Delete Price">
+                                    <i class="fa fa-trash"/>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
