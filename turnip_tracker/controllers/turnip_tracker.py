@@ -26,7 +26,8 @@ class TurnipTrackerController(Controller):
         count = price_model.search_count(domain)
         portal_pager = pager(url="/my/islands", total=count, page=page, step=per_page)
 
-        prices = price_model.search(domain)
+        prices = price_model.search(
+            domain, order='date DESC, time DESC' + ((', price %s' % kw['price_sort'].upper()) if kw.get('price_sort') else ''))
 
         price_fields = price_model.fields_get()
         times = dict(price_fields['time']['selection'])
